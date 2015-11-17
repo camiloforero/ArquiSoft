@@ -3,7 +3,10 @@
 #Dentro de este archivo models.py se guarda la classinición de todas las clases del problema, con sus respectivos campos y las relaciones entre ellos. 
 #Más información acerca de los modelos en https://docs.djangoproject.com/en/1.8/topics/db/models/
 # Una descripción de cada uno de los campos se encuentra acá: https://docs.djangoproject.com/en/1.8/ref/models/fields/#model-field-types
+from django.contrib.auth.models import User
+from django.utils import timezone
 from django.db import models
+from authenticator.models import Perfil
 
 
 class Vehiculo(models.Model):
@@ -12,13 +15,22 @@ class Vehiculo(models.Model):
     ultimaRevision = models.DateTimeField(null=True)
     conductor = models.OneToOneField("Conductor", null=True)
 
-class Conductor(models.Model):
-    nombres= models.CharField(max_length=32)
-    apellidos = models.CharField(max_length=32)
-    cedula = models.CharField(primary_key=True, max_length=32)
+class Conductor(Perfil):
+    pass
 
+class Usuario(Perfil):
+    pass
 
 class Mobibus(Vehiculo):
+    pass
+
+class EstacionVCub(models.Model):
+    nombre = models.CharField(max_length=32)
+    ubicacion = models.CharField(max_length=64)
+
+class VCub(models.Model):
+    estacion = models.ForeignKey(EstacionVCub, null=True, related_name="vcubs")
+    usuario = models.ForeignKey(Usuario, null=True, related_name="vcubs")
     pass
 
 class GPS(models.Model):

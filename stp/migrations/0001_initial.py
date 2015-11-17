@@ -2,21 +2,26 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
             name='Conductor',
             fields=[
-                ('nombres', models.CharField(max_length=32)),
-                ('apellidos', models.CharField(max_length=32)),
-                ('cedula', models.CharField(max_length=32, serialize=False, primary_key=True)),
+                ('cedula', models.CharField(max_length=32)),
+                ('id', models.AutoField(serialize=False, primary_key=True)),
+                ('user', models.OneToOneField(related_name='conductor', to=settings.AUTH_USER_MODEL)),
             ],
+            options={
+                'abstract': False,
+            },
         ),
         migrations.CreateModel(
             name='Emergencia',
@@ -25,6 +30,14 @@ class Migration(migrations.Migration):
                 ('tiempo', models.DateTimeField()),
                 ('causa', models.CharField(max_length=16)),
                 ('reemplazo', models.BooleanField()),
+            ],
+        ),
+        migrations.CreateModel(
+            name='EstacionVCub',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nombre', models.CharField(max_length=32)),
+                ('ubicacion', models.CharField(max_length=64)),
             ],
         ),
         migrations.CreateModel(
@@ -45,9 +58,17 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='VCub',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('estacion', models.ForeignKey(related_name='vcubs', to='stp.EstacionVCub', null=True)),
+            ],
+        ),
+        migrations.CreateModel(
             name='Vehiculo',
             fields=[
                 ('placa', models.CharField(max_length=8, serialize=False, primary_key=True)),
+                ('estado', models.CharField(max_length=16)),
                 ('ultimaRevision', models.DateTimeField(null=True)),
             ],
         ),
@@ -69,5 +90,20 @@ class Migration(migrations.Migration):
             model_name='vehiculo',
             name='conductor',
             field=models.OneToOneField(null=True, to='stp.Conductor'),
+        ),
+        migrations.AddField(
+            model_name='eventogps',
+            name='gps',
+            field=models.ForeignKey(to='stp.GPS'),
+        ),
+        migrations.AddField(
+            model_name='gps',
+            name='mobibus',
+            field=models.ForeignKey(related_name='dispositivos', to='stp.Mobibus', null=True),
+        ),
+        migrations.AddField(
+            model_name='emergencia',
+            name='tranvia',
+            field=models.ForeignKey(related_name='emergencias', to='stp.Tranvia'),
         ),
     ]

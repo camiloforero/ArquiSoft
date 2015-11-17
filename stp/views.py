@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 #En este archivo se guarda lo que en django se conoce como vistas; las maneras como se puede acceder a la información por detrás de la aplicación
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from stp.models import EventoGPS, Mobibus, GPS
-from stp.serializers import EventoSerializer, MobibusSerializer, GPSSerializer
+from stp.models import EventoGPS, Mobibus, GPS, VCub, EstacionVCub
+from stp.serializers import EventoSerializer, MobibusSerializer, GPSSerializer, VCubSerializer, EstacionVCubSerializer, VCubAlquilerSerializer
 
 
 class MobibusList(generics.ListCreateAPIView):
@@ -29,4 +30,38 @@ class EventoList(generics.ListCreateAPIView):
         gps_pk = self.kwargs['gps_pk']
         return EventoGPS.objects.filter(gps = gps_pk)
     serializer_class = EventoSerializer
+
+class VCubList(generics.ListCreateAPIView):
+    queryset = VCub.objects.all()
+    serializer_class = VCubSerializer
+
+class VCubDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = VCub.objects.all()
+    serializer_class = VCubSerializer
+
+class EstacionVCubList(generics.ListCreateAPIView):
+    queryset = EstacionVCub.objects.all()
+    serializer_class = EstacionVCubSerializer
+
+class EstacionVCubDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = EstacionVCub.objects.all()
+    serializer_class = EstacionVCubSerializer
+
+class AlquilarVCub(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    def post(self, request, pk, format=None, pkvcub=None):
+        if pkvcub is None:
+            vcub = VCub.objects.filter(estacion=pk).first()
+            vcub.estacion = None
+            vcub.usuario = request.user.usuario
+            vcub.save()
+            return Response(VCubSerializer(vcub).data)
+        else:
+            vcub = VCub.objects.get(pk=pkvcub)
+            vcub.estacion = EstacionVCub.objects.get(pk=pk)
+            vcub.usuario = None
+            vcub.save()
+            return Response(VCubSerializer(vcub).data)
+
+    
 # Create your views here.
